@@ -23,14 +23,7 @@ const createIssues = async (req: Request, res: Response) => {
 };
 
 const getIssues = async (req: Request, res: Response) => {
-  const user = req.user as JwtPayload;
-  req.body.reporter_id = user.id;
-
-  const result = await issuesService.createIssues(req.body);
-
-  if (!result) {
-    throw new AppError(500, "User did not Created!");
-  }
+  const result = await issuesService.getIssues(req.query);
 
   sendResponse(res, {
     success: true,
