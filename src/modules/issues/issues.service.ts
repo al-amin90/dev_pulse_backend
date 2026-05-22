@@ -170,32 +170,13 @@ class IssuesService {
   async deleteIssue(id: string) {
     const issues = await pool.query(
       `
-        SELECT * FROM issues WHERE id=$1
+        DELETE FROM issues
+        WHERE id=$1
       `,
       [id],
     );
 
-    const result = issues.rows[0];
-
-    if (!result) {
-      throw new AppError(404, "Issues is not Found!");
-    }
-
-    const user = await pool.query(
-      `
-        SELECT id,name,role FROM users WHERE id=($1)
-      `,
-      [result.reporter_id],
-    );
-
-    if (!user.rows[0]) {
-      throw new AppError(404, "User not Found!");
-    }
-
-    delete result.reporter_id;
-    result.reporter = user.rows[0];
-
-    return result;
+    return issues;
   }
 }
 

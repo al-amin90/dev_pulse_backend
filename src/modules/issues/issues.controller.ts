@@ -60,12 +60,16 @@ const updateIssues = async (req: Request, res: Response) => {
 };
 
 const deleteIssues = async (req: Request, res: Response) => {
-  const result = await issuesService.getSingleIssue(req.params.id as string);
+  const result = await issuesService.deleteIssue(req.params.id as string);
+
+  if (result.rowCount === 0) {
+    throw new AppError(404, "Issues is not Found!");
+  }
 
   sendResponse(res, {
     success: true,
     statusCode: 200,
-    data: result,
+    message: "Issue deleted successfully",
   });
 };
 
