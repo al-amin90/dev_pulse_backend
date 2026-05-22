@@ -8,64 +8,63 @@ class AuthService {
   async createUser(payload: IUser) {
     const { name, email, password, role } = payload;
 
+    const hashPassword = await bcrypt.hash(password, 10);
+
     const result = await pool.query(
       `
         INSERT INTO users (name, email, password, role)
         VALUES($1, $2, $3, $4)
         RETURNING *
       `,
-      [name, email, password, role],
+      [name, email, hashPassword, role],
     );
 
     return result.rows[0];
   }
+
+  async loginUserIntoDB(payload: { email: string; password: string }) {
+    const { email, password } = payload;
+
+    const userData = await pool.query(
+      `
+      SELECT * FROM users WHERE email=$1
+
+    `,
+      [email],
+    );
+
+    if (userData.rows.length === 0) {
+      throw new Error("User Not Found!");
+    }
+
+    const user = userData.rows[0];
+
+    const matchPassword = await bcrypt.compare(password, user.password);
+
+    if (!matchPassword) {
+      throw new Error("Invalid Password!");
+    }
+
+    // Generate Token
+    const jwtPayload = {
+      id: user.id,
+      name: user.name,
+      role: user.role,
+    };
+
+    const accessToken = jwt.sign(jwtPayload, config.jwt_secret, {
+      expiresIn: "1d",
+    });
+
+    const refreshToken = jwt.sign(jwtPayload, config.jwt_refresh_secret, {
+      expiresIn: "356d",
+    });
+
+    delete user.password;
+
+    return { accessToken, refreshToken, user };
+  }
 }
-
-// const loginUserIntoDB = async (payload: {
-//   email: string;
-//   password: string;
-// }) => {
-//   console.log("payload", payload);
-//   const { email, password } = payload;
-
-//   const userData = await pool.query(
-//     `
-//       SELECT * FROM users WHERE email=$1
-
-//     `,
-//     [email],
-//   );
-
-//   if (userData.rows.length === 0) {
-//     throw new Error("Invalid Credential!");
-//   }
-
-//   const user = userData.rows[0];
-
-//   const matchPassword = await bcrypt.compare(password, user.password);
-
-//   if (!matchPassword) {
-//     throw new Error("Invalid Credential!");
-//   }
-
-//   // Generate Token
-//   const jwtPayload = {
-//     id: user.id,
-//     name: user.name,
-//     isActive: user.is_active,
-//     email: user.email,
-//   };
-
-//   const accessToken = jwt.sign(jwtPayload, config.jwt_secret as string, {
-//     expiresIn: "1d",
-//   });
-
-//   const refreshToken = jwt.sign(jwtPayload, config.jwt_secret as string, {
-//     expiresIn: "356d",
-//   });
-
-//   return { accessToken, refreshToken };
-// };
 
 // const generateRefreshToken = async (token: string) => {
 //   if (!token) {

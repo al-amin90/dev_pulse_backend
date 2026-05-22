@@ -20,31 +20,23 @@ const signup = async (req: Request, res: Response) => {
   });
 };
 
-// const login = async (req: Request, res: Response) => {
-//   try {
-//     const result = await authService.loginUserIntoDB(req.body);
+const login = async (req: Request, res: Response) => {
+  const result = await authService.loginUserIntoDB(req.body);
 
-//     const { refreshToken } = result;
+  const { accessToken, refreshToken, user } = result;
 
-//     res.cookie("refreshToken", refreshToken, {
-//       secure: false, // only for production
-//       httpOnly: true,
-//       sameSite: "lax", // get api te sent korbe post api korbe na samesite ar jonno
-//     });
+  res.cookie("refreshToken", refreshToken, {
+    secure: false,
+    httpOnly: true,
+    sameSite: "lax",
+  });
 
-//     res.status(200).json({
-//       success: true,
-//       message: "User Login Successfully",
-//       data: result,
-//     });
-//   } catch (error: any) {
-//     res.status(200).json({
-//       success: false,
-//       message: error.message,
-//       data: error,
-//     });
-//   }
-// };
+  res.status(200).json({
+    success: true,
+    message: "Login successful",
+    data: { token: accessToken, user: result },
+  });
+};
 
 // const refreshToken = async (req: Request, res: Response) => {
 //   try {
@@ -66,4 +58,4 @@ const signup = async (req: Request, res: Response) => {
 //   }
 // };
 
-export const authController = { signup };
+export const authController = { signup, login };
