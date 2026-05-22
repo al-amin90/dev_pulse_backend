@@ -9,6 +9,7 @@ import CookieParser from "cookie-parser";
 import cors from "cors";
 import authRouter from "./modules/auth/auth.route";
 import GlobalErrorHandler from "./middleware/GlobalErrorHandler";
+import issuesRouter from "./modules/issues/issues.route";
 
 const app: Application = express();
 
@@ -24,6 +25,7 @@ app.use(
 
 // Routes
 app.use("/api/auth", authRouter);
+app.use("/api/issues", issuesRouter);
 
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({ message: "Hello World!!!" });
