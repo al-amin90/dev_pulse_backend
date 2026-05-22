@@ -4,19 +4,6 @@ A modern RESTful API backend for the Dev Pulse platform, built with **Express.js
 
 **Live Site Link**: [Click here](https://dev-pulse-backend-hazel.vercel.app)
 
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Tech Stack](#tech-stack)
-- [Features](#features)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Running the Server](#running-the-server)
-- [API Endpoints](#api-endpoints)
-- [Project Structure](#project-structure)
-- [Contributing](#contributing)
-- [License](#license)
-
 ## 🎯 Overview
 
 Dev Pulse Backend is a robust API server designed to power the Dev Pulse application. It handles user authentication, authorization, and issue/project management with a focus on security and scalability.
