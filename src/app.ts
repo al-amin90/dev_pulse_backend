@@ -7,6 +7,8 @@ import express, {
 
 import CookieParser from "cookie-parser";
 import cors from "cors";
+import authRouter from "./modules/auth/auth.route";
+import GlobalErrorHandler from "./middleware/GlobalErrorHandler";
 
 const app: Application = express();
 
@@ -20,18 +22,13 @@ app.use(
   }),
 );
 
+// Routes
+app.use("/api/auth", authRouter);
+
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({ message: "Hello World!!!" });
 });
 
-app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
-  console.error(err.stack); // Log the error
-
-  res.status(500).json({
-    success: false,
-    message: err.message || "Internal Server Error",
-    error: err.stack,
-  });
-});
+app.use(GlobalErrorHandler);
 
 export default app;
