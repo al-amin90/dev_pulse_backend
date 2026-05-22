@@ -132,14 +132,6 @@ class IssuesService {
       throw new AppError(404, "Issues is not Found!");
     }
 
-    console.log(
-      "USER_ROLES.contributor === user.role",
-      USER_ROLES.contributor === user.role,
-    );
-    console.log("user.id", user.id);
-    console.log("issuesData.reporter_id", issuesData.reporter_id);
-    console.log(user.id !== issuesData.reporter_id);
-
     if (
       USER_ROLES.contributor === user.role &&
       user.id !== issuesData.reporter_id
