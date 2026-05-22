@@ -4,6 +4,7 @@ import jwt, { type JwtPayload } from "jsonwebtoken";
 import config from "../../config";
 import type { IIssueQuery, Issue } from "./issues.interface";
 import AppError from "../../utils/AppError";
+import { USER_ROLES } from "../../interface";
 
 class IssuesService {
   async createIssues(payload: Issue) {
@@ -85,6 +86,88 @@ class IssuesService {
   }
 
   async getSingleIssue(id: string) {
+    const issues = await pool.query(
+      `
+        SELECT * FROM issues WHERE id=$1
+      `,
+      [id],
+    );
+
+    const result = issues.rows[0];
+
+    if (!result) {
+      throw new AppError(404, "Issues is not Found!");
+    }
+
+    const user = await pool.query(
+      `
+        SELECT id,name,role FROM users WHERE id=($1)
+      `,
+      [result.reporter_id],
+    );
+
+    if (!user.rows[0]) {
+      throw new AppError(404, "User not Found!");
+    }
+
+    delete result.reporter_id;
+    result.reporter = user.rows[0];
+
+    return result;
+  }
+
+  async updateIssue(user: JwtPayload, payload: Partial<Issue>, id: string) {
+    const issues = await pool.query(
+      `
+        SELECT * 
+        FROM issues 
+        WHERE id=$1
+      `,
+      [id],
+    );
+
+    const issuesData = issues.rows[0];
+
+    if (!issuesData) {
+      throw new AppError(404, "Issues is not Found!");
+    }
+
+    console.log(
+      "USER_ROLES.contributor === user.role",
+      USER_ROLES.contributor === user.role,
+    );
+    console.log("user.id", user.id);
+    console.log("issuesData.reporter_id", issuesData.reporter_id);
+    console.log(user.id !== issuesData.reporter_id);
+
+    if (
+      USER_ROLES.contributor === user.role &&
+      user.id !== issuesData.reporter_id
+    ) {
+      throw new AppError(403, "Forbidden You Don't have Permission!");
+    }
+
+    const { title, description, type, status } = payload;
+
+    const result = await pool.query(
+      `
+        UPDATE issues 
+        SET
+        title=COALESCE($1, title),
+        description=COALESCE($2, description),
+        type=COALESCE($3, type),
+        status=COALESCE($4, status)
+
+        WHERE id=$5
+        RETURNING *
+      `,
+      [title, description, type, status, id],
+    );
+
+    return result.rows[0];
+  }
+
+  async deleteIssue(id: string) {
     const issues = await pool.query(
       `
         SELECT * FROM issues WHERE id=$1

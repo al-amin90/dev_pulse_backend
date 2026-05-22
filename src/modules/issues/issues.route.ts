@@ -12,8 +12,11 @@ router.post(
 );
 router.get("/", issuesController.getIssues);
 router.get("/:id", issuesController.getSingleIssues);
-
-// router.post("/refresh-token", authController.refreshToken);
+router.patch(
+  "/:id",
+  auth(USER_ROLES.contributor, USER_ROLES.maintainer),
+  issuesController.updateIssues,
+);
 
 const issuesRouter = router;
 
