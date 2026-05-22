@@ -3,6 +3,7 @@ import { pool } from "../../db";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import config from "../../config";
 import type { Issue } from "./issues.interface";
+import AppError from "../../utils/AppError";
 
 class IssuesService {
   async createIssues(payload: Issue) {
@@ -20,47 +21,35 @@ class IssuesService {
     return result.rows[0];
   }
 
-  async loginUserIntoDB(payload: { email: string; password: string }) {
-    const { email, password } = payload;
-
-    const userData = await pool.query(
+  async getSingleIssue(id: string) {
+    const issues = await pool.query(
       `
-      SELECT * FROM users WHERE email=$1
-
-    `,
-      [email],
+        SELECT * FROM issues WHERE id=($1)
+      `,
+      [id],
     );
 
-    if (userData.rows.length === 0) {
-      throw new Error("User Not Found!");
+    const result = issues.rows[0];
+
+    if (!result) {
+      throw new AppError(404, "Issues is not Found!");
     }
 
-    const user = userData.rows[0];
+    const user = await pool.query(
+      `
+        SELECT id,name,role FROM users WHERE id=($1)
+      `,
+      [result.reporter_id],
+    );
 
-    const matchPassword = await bcrypt.compare(password, user.password);
-
-    if (!matchPassword) {
-      throw new Error("Invalid Password!");
+    if (!user.rows[0]) {
+      throw new AppError(404, "User not Found!");
     }
 
-    // Generate Token
-    const jwtPayload = {
-      id: user.id,
-      name: user.name,
-      role: user.role,
-    };
+    delete result.reporter_id;
+    result.reporter = user.rows[0];
 
-    const accessToken = jwt.sign(jwtPayload, config.jwt_secret, {
-      expiresIn: "1d",
-    });
-
-    const refreshToken = jwt.sign(jwtPayload, config.jwt_refresh_secret, {
-      expiresIn: "356d",
-    });
-
-    delete user.password;
-
-    return { accessToken, refreshToken, user };
+    return result;
   }
 }
 
