@@ -6,9 +6,7 @@ import type { Issue } from "./issues.interface";
 
 class IssuesService {
   async createIssues(payload: Issue) {
-    const { title, description, type } = payload;
-
-    const reporter_id = 6;
+    const { title, description, type, reporter_id } = payload;
 
     const result = await pool.query(
       `

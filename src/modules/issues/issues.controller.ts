@@ -3,8 +3,12 @@ import sendResponse from "../../utils/sendResponce";
 import authService from "./issues.service";
 import AppError from "../../utils/AppError";
 import issuesService from "./issues.service";
+import type { JwtPayload } from "jsonwebtoken";
 
 const createIssues = async (req: Request, res: Response) => {
+  const user = req.user as JwtPayload;
+  req.body.reporter_id = user.id;
+
   const result = await issuesService.createIssues(req.body);
 
   if (!result) {

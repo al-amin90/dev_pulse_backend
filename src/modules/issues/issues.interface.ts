@@ -1,5 +1,6 @@
 export interface Issue {
   title: string;
   description: string;
-  type: "bug" | "feature" | "enhancement" | "task"; // Added other common types
+  type: "bug" | "feature" | "enhancement" | "task";
+  reporter_id: number;
 }
